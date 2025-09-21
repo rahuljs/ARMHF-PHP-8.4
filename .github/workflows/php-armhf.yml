@@ -1,7 +1,7 @@
 name: Build PHP 8.4 ARMHF
 
 on: [push]
-
+ 
 jobs:
   build-php:
     runs-on: ubuntu-latest

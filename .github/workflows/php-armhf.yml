@@ -1,7 +1,7 @@
 name: Build PHP 8.4 ARMHF
 
 on: [push]
- 
+
 jobs:
   build-php:
     runs-on: ubuntu-latest
@@ -16,15 +16,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build PHP in ARMHF container
+      - name: Build ARMHF Docker image
         run: |
-          docker run --rm -t arm32v7/ubuntu:22.04 bash -c "\
-            apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
-              build-essential autoconf wget curl unzip \
-              libxml2-dev libsqlite3-dev libcurl4-openssl-dev libssl-dev \
-              libonig-dev libjpeg-dev libpng-dev libwebp-dev \
-              libfreetype6-dev libzip-dev zlib1g-dev pkg-config git && \
-            wget https://www.php.net/distributions/php-8.4.30.tar.gz && \
-            tar xzf php-8.4.30.tar.gz && cd php-8.4.30 && \
-            ./configure --prefix=/php-install --enable-mbstring --with-curl --with-openssl --with-zlib --enable-soap --enable-intl --with-pdo-mysql && \
-            make -j$(nproc) && make install"
+          docker buildx build --platform linux/arm/v7 -t php-armhf-builder . --load

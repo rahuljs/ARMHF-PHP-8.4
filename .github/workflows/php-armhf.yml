@@ -5,6 +5,8 @@ on: [push]
 jobs:
   build-php:
     runs-on: ubuntu-latest
+    container:
+      image: arm32v7/ubuntu:22.04
 
     steps:
       - name: Checkout code
@@ -12,41 +14,36 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo dpkg --add-architecture armhf
-          sudo apt update
-          sudo apt install -y \
-            gcc-arm-linux-gnueabihf \
-            g++-arm-linux-gnueabihf \
-            make \
+          apt update
+          DEBIAN_FRONTEND=noninteractive apt install -y \
+            build-essential \
             autoconf \
-            libxml2-dev:armhf \
-            libsqlite3-dev:armhf \
-            libcurl4-openssl-dev:armhf \
-            pkg-config:armhf \
-            libssl-dev:armhf \
-            libonig-dev:armhf \
-            libjpeg-dev:armhf \
-            libpng-dev:armhf \
-            libwebp-dev:armhf \
-            libfreetype6-dev:armhf \
-            libzip-dev:armhf \
-            zlib1g-dev:armhf \
             wget \
             curl \
-            unzip
+            unzip \
+            libxml2-dev \
+            libsqlite3-dev \
+            libcurl4-openssl-dev \
+            libssl-dev \
+            libonig-dev \
+            libjpeg-dev \
+            libpng-dev \
+            libwebp-dev \
+            libfreetype6-dev \
+            libzip-dev \
+            zlib1g-dev \
+            pkg-config \
+            git
 
       - name: Download PHP 8.4 source
         run: |
           wget https://www.php.net/distributions/php-8.4.30.tar.gz
           tar xzf php-8.4.30.tar.gz
-          cd php-8.4.30
 
-      - name: Configure & build for ARMHF
+      - name: Configure & build PHP
         run: |
           cd php-8.4.30
           ./configure \
-            --host=arm-linux-gnueabihf \
-            --build=x86_64-linux-gnu \
             --prefix=$PWD/install \
             --enable-mbstring \
             --with-curl \

@@ -59,7 +59,7 @@ jobs:
           make install
 
       - name: Upload ARMHF PHP binary
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: php-8.4-armhf
           path: php-8.4.30/install/

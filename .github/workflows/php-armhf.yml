@@ -10,12 +10,41 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build ARMHF Docker image
+      - name: Install ARMHF cross-compiler
         run: |
-          docker buildx build --platform linux/arm/v7 -t php-armhf-builder . --load
+          sudo dpkg --add-architecture armhf
+          sudo apt update
+          sudo apt install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
+            make autoconf wget curl unzip pkg-config \
+            libxml2-dev:armhf libsqlite3-dev:armhf libcurl4-openssl-dev:armhf \
+            libssl-dev:armhf libonig-dev:armhf libjpeg-dev:armhf \
+            libpng-dev:armhf libwebp-dev:armhf libfreetype6-dev:armhf \
+            libzip-dev:armhf zlib1g-dev:armhf
+
+      - name: Download PHP 8.4 source
+        run: |
+          wget https://www.php.net/distributions/php-8.4.30.tar.gz
+          tar xzf php-8.4.30.tar.gz
+
+      - name: Configure & cross-compile PHP
+        run: |
+          cd php-8.4.30
+          ./configure \
+            --host=arm-linux-gnueabihf \
+            --build=x86_64-linux-gnu \
+            --prefix=$PWD/install \
+            --enable-mbstring \
+            --with-curl \
+            --with-openssl \
+            --with-zlib \
+            --enable-soap \
+            --enable-intl \
+            --with-pdo-mysql
+          make -j$(nproc)
+          make install
+
+      - name: Upload ARMHF PHP binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: php-8.4-armhf
+          path: php-8.4.30/install/

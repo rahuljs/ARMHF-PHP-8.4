@@ -1,0 +1,65 @@
+name: Build PHP 8.4 ARMHF
+
+on: [push]
+
+jobs:
+  build-php:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo dpkg --add-architecture armhf
+          sudo apt update
+          sudo apt install -y \
+            gcc-arm-linux-gnueabihf \
+            g++-arm-linux-gnueabihf \
+            make \
+            autoconf \
+            libxml2-dev:armhf \
+            libsqlite3-dev:armhf \
+            libcurl4-openssl-dev:armhf \
+            pkg-config:armhf \
+            libssl-dev:armhf \
+            libonig-dev:armhf \
+            libjpeg-dev:armhf \
+            libpng-dev:armhf \
+            libwebp-dev:armhf \
+            libfreetype6-dev:armhf \
+            libzip-dev:armhf \
+            zlib1g-dev:armhf \
+            wget \
+            curl \
+            unzip
+
+      - name: Download PHP 8.4 source
+        run: |
+          wget https://www.php.net/distributions/php-8.4.30.tar.gz
+          tar xzf php-8.4.30.tar.gz
+          cd php-8.4.30
+
+      - name: Configure & build for ARMHF
+        run: |
+          cd php-8.4.30
+          ./configure \
+            --host=arm-linux-gnueabihf \
+            --build=x86_64-linux-gnu \
+            --prefix=$PWD/install \
+            --enable-mbstring \
+            --with-curl \
+            --with-openssl \
+            --with-zlib \
+            --enable-soap \
+            --enable-intl \
+            --with-pdo-mysql
+          make -j$(nproc)
+          make install
+
+      - name: Upload ARMHF PHP binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: php-8.4-armhf
+          path: php-8.4.30/install/
